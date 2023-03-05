@@ -33,6 +33,7 @@ func (cloud *TagCloud) AddTag(tag string) {
 			return
 		}
 	}
+
 	cloud.StatSlice = append(cloud.StatSlice, TagStat{Tag: tag, OccurrenceCount: 1})
 }
 
