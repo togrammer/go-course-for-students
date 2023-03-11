@@ -49,7 +49,7 @@ func ParseFlags() (*Options, error) {
 }
 
 func (opts *Options) has(str string) bool {
-	for i, _ := range opts.Conv {
+	for i := range opts.Conv {
 		if opts.Conv[i] == str {
 			return true
 		}
