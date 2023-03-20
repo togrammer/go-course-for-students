@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 )
 
 // Result represents the Size function result
@@ -35,6 +36,7 @@ func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 	semaphoreChan := make(chan struct{}, a.maxWorkersCount)
 	defer close(resultChan)
 	defer close(semaphoreChan)
+
 	var totalError error = nil
 	dirs, files, err := d.Ls(ctx)
 	if err != nil {
@@ -55,8 +57,8 @@ func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 				totalError = err
 				return
 			}
-			result.Size += size
-			result.Count++
+			atomic.AddInt64(&result.Size, size)
+			atomic.AddInt64(&result.Count, 1)
 		}(file)
 	}
 
@@ -80,8 +82,8 @@ func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 		case <-ctx.Done():
 			return result, totalError
 		case dirResult := <-resultChan:
-			result.Size += dirResult.Size
-			result.Count += dirResult.Count
+			atomic.AddInt64(&result.Size, dirResult.Size)
+			atomic.AddInt64(&result.Count, dirResult.Count)
 		}
 	}
 	wg.Wait()
