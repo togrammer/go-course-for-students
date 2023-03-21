@@ -23,19 +23,20 @@ type DirSizer interface {
 // sizer implement the DirSizer interface
 type sizer struct {
 	maxWorkersCount int // number of workers for asynchronous run
+	semaphoreChan   chan struct{}
 }
 
 // NewSizer returns new DirSizer instance
 func NewSizer() DirSizer {
-	return &sizer{maxWorkersCount: 10}
+	sizer := sizer{maxWorkersCount: 10}
+	sizer.semaphoreChan = make(chan struct{}, 10)
+	return &sizer
 }
 
 func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 	result := Result{}
 	resultChan := make(chan Result)
-	semaphoreChan := make(chan struct{}, a.maxWorkersCount)
 	defer close(resultChan)
-	defer close(semaphoreChan)
 
 	var totalError error = nil
 	dirs, files, err := d.Ls(ctx)
@@ -46,10 +47,10 @@ func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 	wg.Add(len(dirs) + len(files))
 
 	for _, file := range files {
-		semaphoreChan <- struct{}{}
+		a.semaphoreChan <- struct{}{}
 		go func(file File) {
 			defer func() {
-				<-semaphoreChan
+				<-a.semaphoreChan
 				wg.Done()
 			}()
 			size, err := file.Stat(ctx)
@@ -63,10 +64,10 @@ func (a *sizer) Size(ctx context.Context, d Dir) (Result, error) {
 	}
 
 	for _, dir := range dirs {
-		semaphoreChan <- struct{}{}
+		a.semaphoreChan <- struct{}{}
 		go func(dir Dir) {
 			defer func() {
-				<-semaphoreChan
+				<-a.semaphoreChan
 				wg.Done()
 			}()
 			dirResult, err := a.Size(ctx, dir)
