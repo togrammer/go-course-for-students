@@ -3,8 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"github.com/redis/go-redis/v9"
+	"sync"
 )
 
 type Store interface {
@@ -23,9 +22,9 @@ func NewUserService(store Store) *UserService {
 }
 
 func main() {
-	// store := &sync.Map{}
-	cache := NewRedisCache("", "", 0)
-	_ = NewUserService(cache)
+	store := &sync.Map{}
+	//cache := NewRedisCache("", "", 0)
+	_ = NewUserService(store)
 }
 
 type RedisStore struct {
