@@ -5,13 +5,22 @@ import (
 )
 
 type (
-	In  <-chan any
+	In  = chan any
 	Out = In
 )
 
 type Stage func(in In) (out Out)
 
 func ExecutePipeline(ctx context.Context, in In, stages ...Stage) Out {
-	// TODO
-	return nil
+	out := in
+	for _, stage := range stages {
+		out = stage(out)
+	}
+
+	go func() {
+		<-ctx.Done()
+		close(out)
+	}()
+
+	return out
 }
