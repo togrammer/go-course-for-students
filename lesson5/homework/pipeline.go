@@ -12,15 +12,27 @@ type (
 type Stage func(in In) (out Out)
 
 func ExecutePipeline(ctx context.Context, in In, stages ...Stage) Out {
-	out := in
+	var out = in
 	for _, stage := range stages {
-		out = stage(out)
+		out = stageWithContext(ctx, out, stage)
 	}
 
+	return out
+}
+
+func stageWithContext(ctx context.Context, in In, stage Stage) Out {
+	out := make(Out)
 	go func() {
-		<-ctx.Done()
-		close(out)
+		defer close(out)
+		for val := range in {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				out <- val
+			}
+		}
 	}()
 
-	return out
+	return stage(out)
 }
