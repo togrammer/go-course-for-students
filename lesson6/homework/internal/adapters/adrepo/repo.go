@@ -12,43 +12,26 @@ type RepoInit struct {
 	adList []ads.Ad
 }
 
-var ErrWrongAdId = errors.New("wrong adId")
-var ErrWrongUser = errors.New("invalid user")
-
-func (a *RepoInit) Add(ctx context.Context, title string, text string, authorId int64) (ads.Ad, error) {
+func (a *RepoInit) Add(ctx context.Context, title string, text string, authorId int64) ads.Ad {
 	defer func() {
 		a.lastId++
 	}()
 	a.adList = append(a.adList, ads.Ad{ID: a.lastId, Title: title, Text: text, AuthorID: authorId})
-	return a.adList[a.lastId], nil
+	return a.adList[a.lastId]
 }
 
-func (a *RepoInit) ChangeStatus(ctx context.Context, adId int64, userId int64, published bool) error {
-	if adId >= a.lastId {
-		return ErrWrongAdId
-	}
-	if userId != a.adList[adId].AuthorID {
-		return ErrWrongUser
-	}
+func (a *RepoInit) ChangeStatus(ctx context.Context, adId int64, userId int64, published bool) {
 	a.adList[adId].Published = published
-	return nil
 }
 
-func (a *RepoInit) UpdateAd(ctx context.Context, adId int64, userId int64, title string, text string) error {
-	if adId >= a.lastId {
-		return ErrWrongAdId
-	}
-	if userId != a.adList[adId].AuthorID {
-		return ErrWrongUser
-	}
+func (a *RepoInit) UpdateAd(ctx context.Context, adId int64, userId int64, title string, text string) {
 	a.adList[adId].Title = title
 	a.adList[adId].Text = text
-	return nil
 }
 
 func (a *RepoInit) Find(ctx context.Context, adId int64) (ads.Ad, error) {
 	if adId >= a.lastId {
-		return ads.Ad{}, ErrWrongAdId
+		return ads.Ad{}, errors.New("wrong adId")
 	}
 	return a.adList[adId], nil
 }

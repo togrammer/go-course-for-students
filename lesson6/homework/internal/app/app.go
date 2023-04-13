@@ -15,54 +15,55 @@ type App interface {
 
 type Repository interface {
 	Find(ctx context.Context, adID int64) (ads.Ad, error)
-	Add(ctx context.Context, title string, text string, userID int64) (ads.Ad, error)
-	ChangeStatus(ctx context.Context, adId int64, userId int64, published bool) error
-	UpdateAd(ctx context.Context, adId int64, userId int64, title string, text string) error
+	Add(ctx context.Context, title string, text string, userID int64) ads.Ad
+	ChangeStatus(ctx context.Context, adId int64, userId int64, published bool)
+	UpdateAd(ctx context.Context, adId int64, userId int64, title string, text string)
 }
 
 type RepoApp struct {
 	repo Repository
 }
 
+var ErrWrongAdId = errors.New("wrong adId")
+var ErrWrongUser = errors.New("invalid user")
+
 func (a RepoApp) CreateAd(ctx context.Context, title string, text string, userID int64) (ads.Ad, error) {
-	ad, err := a.repo.Add(ctx, title, text, userID)
-	if err != nil {
-		return ads.Ad{}, err
+	e := validation.Validate(ads.Ad{Text: text, Title: title})
+	if e != nil {
+		return ads.Ad{}, e
 	}
-	e := a.Validate(ctx, ad.ID)
-	return ad, e
+	ad := a.repo.Add(ctx, title, text, userID)
+	return ad, nil
 }
 
 func (a RepoApp) ChangeAdStatus(ctx context.Context, adID int64, UserID int64, published bool) (ads.Ad, error) {
-	err := a.repo.ChangeStatus(ctx, adID, UserID, published)
-	if err != nil {
-		return ads.Ad{}, err
+	ad, e := a.repo.Find(ctx, adID)
+	if UserID != ad.AuthorID {
+		return ads.Ad{}, ErrWrongUser
 	}
-	ad, _ := a.repo.Find(ctx, adID)
-	e := a.Validate(ctx, adID)
-	return ad, e
+	if e != nil {
+		return ads.Ad{}, ErrWrongAdId
+	}
+	a.repo.ChangeStatus(ctx, adID, UserID, published)
+	ad, _ = a.repo.Find(ctx, adID)
+	return ad, nil
 }
 
 func (a RepoApp) UpdateAd(ctx context.Context, adID int64, UserID int64, title string, text string) (ads.Ad, error) {
-	err := a.repo.UpdateAd(ctx, adID, UserID, title, text)
-	if err != nil {
-		return ads.Ad{}, err
-	}
-	ad, _ := a.repo.Find(ctx, adID)
-	e := a.Validate(ctx, adID)
-	return ad, e
-}
-
-func (a RepoApp) Validate(ctx context.Context, adId int64) error {
-	ad, err := a.repo.Find(ctx, adId)
-	if err != nil {
-		return err
-	}
-	e := validation.Validate(ad)
+	e := validation.Validate(ads.Ad{Text: text, Title: title})
 	if e != nil {
-		return errors.New("validation error")
+		return ads.Ad{}, e
 	}
-	return nil
+	ad, err := a.repo.Find(ctx, adID)
+	if err != nil {
+		return ads.Ad{}, ErrWrongAdId
+	}
+	if ad.AuthorID != UserID {
+		return ads.Ad{}, ErrWrongUser
+	}
+	a.repo.UpdateAd(ctx, adID, UserID, title, text)
+	ad, _ = a.repo.Find(ctx, adID)
+	return ad, nil
 }
 
 func NewApp(repo Repository) App {

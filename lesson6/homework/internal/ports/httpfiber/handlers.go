@@ -2,7 +2,6 @@ package httpfiber
 
 import (
 	"errors"
-	"homework6/internal/adapters/adrepo"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,7 +48,7 @@ func changeAdStatus(a app.App) fiber.Handler {
 
 		ad, er := a.ChangeAdStatus(c.Context(), int64(adID), reqBody.UserID, reqBody.Published)
 		if er != nil {
-			if errors.Is(er, adrepo.ErrWrongUser) {
+			if errors.Is(er, app.ErrWrongUser) {
 				c.Status(http.StatusForbidden)
 			} else {
 				c.Status(http.StatusBadRequest)
@@ -83,7 +82,7 @@ func updateAd(a app.App) fiber.Handler {
 
 		ad, er := a.UpdateAd(c.Context(), int64(adID), reqBody.UserID, reqBody.Title, reqBody.Text)
 		if er != nil {
-			if errors.Is(er, adrepo.ErrWrongUser) {
+			if errors.Is(er, app.ErrWrongUser) {
 				c.Status(http.StatusForbidden)
 			} else {
 				c.Status(http.StatusBadRequest)
