@@ -27,7 +27,6 @@ func createAd(a app.App) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, AdErrorResponse(err))
 		}
 		c.JSON(http.StatusOK, AdSuccessResponse(&ad))
-		return
 	}
 }
 
@@ -64,7 +63,6 @@ func changeAdStatus(a app.App) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, AdSuccessResponse(&ad))
-		return
 	}
 }
 
@@ -101,7 +99,6 @@ func updateAd(a app.App) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, AdSuccessResponse(&ad))
-		return
 	}
 }
 
@@ -143,7 +140,6 @@ func listAds(a app.App) gin.HandlerFunc {
 		ads := a.ListAds(c, authorId, publishedOnly, createdTime)
 
 		c.JSON(http.StatusOK, AdSuccessResponseList(&ads))
-		return
 	}
 }
 
@@ -181,7 +177,6 @@ func createUser(a app.App) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, UserErrorResponse(err))
 		}
 		c.JSON(http.StatusOK, UserSuccessResponse(&user))
-		return
 	}
 }
 
@@ -207,7 +202,6 @@ func changeUser(a app.App) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, UserSuccessResponse(&user))
-		return
 	}
 }
 
