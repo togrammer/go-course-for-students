@@ -56,8 +56,7 @@ func (a RepoApp) CreateAd(ctx context.Context, title string, text string, userID
 }
 
 func (a RepoApp) CreateUser(ctx context.Context, nickname string, email string) users.User {
-	user := a.repoUsers.AddUser(ctx, nickname, email)
-	return user
+	return a.repoUsers.AddUser(ctx, nickname, email)
 }
 
 func (a RepoApp) ChangeAdStatus(ctx context.Context, adID int64, UserID int64, published bool) (ads.Ad, error) {
@@ -99,13 +98,12 @@ func (a RepoApp) UpdateAd(ctx context.Context, adID int64, UserID int64, title s
 }
 
 func (a RepoApp) UpdateUser(ctx context.Context, userID int64, nickname string, email string) (users.User, error) {
-	user, err := a.repoUsers.FindUser(ctx, userID)
+	_, err := a.repoUsers.FindUser(ctx, userID)
 	if err != nil {
 		return users.User{}, ErrWrongUser
 	}
 	a.repoUsers.UpdateUser(ctx, userID, nickname, email)
-	user, err = a.repoUsers.FindUser(ctx, userID)
-	return user, nil
+	return a.repoUsers.FindUser(ctx, userID)
 }
 
 func (a RepoApp) FindAd(ctx context.Context, adID int64) (ads.Ad, error) {
