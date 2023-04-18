@@ -151,12 +151,12 @@ func getAdById(a app.App) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, AdErrorResponse(err))
 			return
 		}
-		ad, err := a.FindAd(c, int64(adId))
-		if err != nil {
-			if errors.Is(err, app.ErrWrongAdId) {
-				c.JSON(http.StatusBadRequest, AdErrorResponse(err))
+		ad, e := a.FindAd(c, int64(adId))
+		if e != nil {
+			if errors.Is(e, app.ErrWrongAdId) {
+				c.JSON(http.StatusBadRequest, AdErrorResponse(e))
 			}
-			c.JSON(http.StatusInternalServerError, AdErrorResponse(err))
+			c.JSON(http.StatusInternalServerError, AdErrorResponse(e))
 			return
 		}
 		c.JSON(http.StatusOK, AdSuccessResponse(&ad))
@@ -193,12 +193,12 @@ func changeUser(a app.App) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, UserErrorResponse(err))
 			return
 		}
-		user, err := a.UpdateUser(c, int64(userId), reqBody.Nickname, reqBody.Email)
-		if err != nil {
-			if errors.Is(err, app.ErrWrongUser) {
-				c.JSON(http.StatusBadRequest, UserErrorResponse(err))
+		user, e := a.UpdateUser(c, int64(userId), reqBody.Nickname, reqBody.Email)
+		if e != nil {
+			if errors.Is(e, app.ErrWrongUser) {
+				c.JSON(http.StatusBadRequest, UserErrorResponse(e))
 			}
-			c.JSON(http.StatusInternalServerError, UserErrorResponse(err))
+			c.JSON(http.StatusInternalServerError, UserErrorResponse(e))
 			return
 		}
 		c.JSON(http.StatusOK, UserSuccessResponse(&user))
