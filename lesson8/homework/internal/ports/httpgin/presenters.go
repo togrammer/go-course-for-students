@@ -70,7 +70,7 @@ func UserSuccessResponse(u *users.User) *gin.H {
 }
 
 func AdSuccessResponseList(ads *[]ads.Ad) *gin.H {
-	l := []adResponse{}
+	var l []adResponse
 	for _, ad := range *ads {
 		l = append(l, adResponse{
 			ID:        ad.ID,
