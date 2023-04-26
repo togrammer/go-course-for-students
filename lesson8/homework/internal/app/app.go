@@ -6,6 +6,7 @@ import (
 	"homework8/internal/ads"
 	"homework8/internal/users"
 	"homework8/validation"
+	"strings"
 	"time"
 )
 
@@ -139,7 +140,7 @@ func (a RepoApp) FindAdsByTitle(ctx context.Context, title string) []ads.Ad {
 	var filteredAds []ads.Ad
 
 	for _, ad := range l {
-		if ad.Title == title {
+		if strings.HasPrefix(ad.Title, title) {
 			filteredAds = append(filteredAds, ad)
 		}
 	}
