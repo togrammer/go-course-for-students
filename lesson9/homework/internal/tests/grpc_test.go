@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"google.golang.org/grpc/credentials/insecure"
 	"homework9/internal/adapters/userrepo"
 	"net"
 	"testing"
@@ -42,7 +43,7 @@ func TestGRRPCCreateUser(t *testing.T) {
 		cancel()
 	})
 
-	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(dialer), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(dialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err, "grpc.DialContext")
 
 	t.Cleanup(func() {
