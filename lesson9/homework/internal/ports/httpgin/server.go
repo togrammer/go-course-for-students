@@ -13,14 +13,14 @@ type Server struct {
 	app  *gin.Engine
 }
 
-func NewHTTPServer(port string, a app.App) Server {
+func NewHTTPServer(port string, a app.App) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 	eng := gin.New()
 	eng.Use(gin.Recovery())
 	eng.Use(CustomMW)
 	api := eng.Group("/api/v1")
 	AppRouter(api, a)
-	s := Server{port: port, app: eng}
+	s := &http.Server{Addr: port, Handler: eng}
 	return s
 }
 
