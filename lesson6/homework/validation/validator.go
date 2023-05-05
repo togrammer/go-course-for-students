@@ -1,4 +1,4 @@
-package homework
+package validation
 
 import (
 	"fmt"
@@ -89,8 +89,27 @@ func validateField(value reflect.Value, tag string) error {
 			return ErrInvalidValidatorSyntax
 		}
 		return validateMaximum(value, maximum)
+	case strings.HasPrefix(tag, "range:"):
+		parts := strings.Split(tag, ":")
+		rangeParts := strings.Split(parts[1], ",")
+		l, _ := strconv.Atoi(rangeParts[0])
+		r, _ := strconv.Atoi(rangeParts[1])
+		return ValidateRange(value, l, r)
 	default:
 		return ErrInvalidValidatorSyntax
+	}
+}
+
+func ValidateRange(value reflect.Value, l int, r int) error {
+	switch value.Kind() {
+	case reflect.String:
+		if value.Len() >= l && value.Len() <= r {
+			return nil
+		} else {
+			return fmt.Errorf("invalid string length")
+		}
+	default:
+		return fmt.Errorf("length validation not supported for %s", value.Kind())
 	}
 }
 
